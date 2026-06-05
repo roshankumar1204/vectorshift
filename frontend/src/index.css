@@ -1,0 +1,418 @@
+/* ── CSS Variables ───────────────────────────── */
+:root {
+  --bg-app:        #0f1117;
+  --bg-toolbar:    #13131a;
+  --bg-canvas:     #f7f8fa;
+  --bg-node:       #ffffff;
+
+  --accent-purple: #6c63ff;
+  --accent-blue:   #5b9cf6;
+  --accent-green:  #34d399;
+  --accent-orange: #fb923c;
+  --accent-pink:   #f472b6;
+  --accent-yellow: #facc15;
+
+  --border-soft:   #e2e2e0;
+  --border-dark:   #2a2a35;
+
+  --text-primary:  #13131a;
+  --text-muted:    #888;
+  --text-white:    #ffffff;
+  --text-toolbar:  #c8c8d4;
+
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  10px;
+  --radius-xl:  12px;
+
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* ── Reset ───────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── App shell ───────────────────────────────── */
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Toolbar ─────────────────────────────────── */
+.toolbar {
+  background: var(--bg-toolbar);
+  border-bottom: 0.5px solid var(--border-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.toolbar-logo {
+  color: var(--text-white);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-right: 8px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--border-dark);
+  margin: 0 6px;
+}
+
+.toolbar-nodes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ── Draggable node buttons ──────────────────── */
+.draggable-node {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--border-dark);
+  background: transparent;
+  color: var(--text-toolbar);
+  font-size: 12px;
+  font-family: var(--font);
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+  min-width: unset;
+  height: unset;
+}
+
+.draggable-node:hover {
+  background: #1e1e2e;
+  border-color: #4a4a5a;
+}
+
+.draggable-node:active {
+  cursor: grabbing;
+}
+
+.draggable-node .node-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* per-type dot colors */
+.draggable-node.customInput .node-dot { background: var(--accent-blue); }
+.draggable-node.llm          .node-dot { background: var(--accent-purple); }
+.draggable-node.customOutput .node-dot { background: var(--accent-green); }
+.draggable-node.text         .node-dot { background: var(--accent-orange); }
+.draggable-node.filter       .node-dot { background: var(--accent-pink); }
+.draggable-node.transform    .node-dot { background: var(--accent-yellow); }
+
+/* ── Canvas area ─────────────────────────────── */
+.canvas-wrapper {
+  flex: 1;
+  overflow: hidden;
+ 
+}
+
+/* ── Submit bar ──────────────────────────────── */
+.submit-bar {
+  background: var(--bg-toolbar);
+  border-top: 0.5px solid var(--border-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  flex-shrink: 0;
+}
+
+.submit-btn {
+  background: var(--accent-purple);
+  color: var(--text-white);
+  border: none;
+  padding: 9px 36px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.submit-btn:hover  { opacity: 0.9; }
+.submit-btn:active { transform: scale(0.98); }
+
+
+
+/* ── Nodes ───────────────────────────────────── */
+.base-node {
+   position: relative; 
+  background: #1a1a27;
+   border: 1px solid #3a3a55;
+  border-radius: var(--radius-lg);
+  min-width: 200px;
+  font-family: var(--font);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.base-node:hover {
+  border-color: #5a5a7a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.base-node.selected {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.15);
+}
+
+/* header */
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 0.5px solid #2a2a3d;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.node-header-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.node-header-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #e8e8f0;
+  flex: 1;
+}
+
+.node-header-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+/* body */
+.node-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* fields inside nodes */
+.node-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.node-field label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #666680;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.node-field input,
+.node-field select,
+.node-field textarea {
+  width: 100%;
+  padding: 5px 8px;
+  background: #13131a;
+  border: 0.5px solid #2a2a3d;
+  border-radius: var(--radius-sm);
+  color: #e8e8f0;
+  font-size: 12px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.node-field input:focus,
+.node-field select:focus,
+.node-field textarea:focus {
+  border-color: var(--accent-purple);
+}
+
+.node-field select option {
+  background: #1a1a27;
+  color: #e8e8f0;
+}
+
+/* handles */
+.react-flow__handle {
+  width: 12px !important;
+  height: 12px !important;
+  border: 2px solid #13131a !important;
+  border-radius: 50% !important;
+  transition: transform 0.15s !important;
+}
+
+.react-flow__handle:hover {
+  transform: scale(1.3) !important;
+}
+
+/* per-type handle colors — set via inline style on the handle */
+.handle-label {
+  position: absolute;
+  font-size: 9px;
+  color: #666680;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.handle-label.left  { right: 18px; top: -6px; }
+.handle-label.right { left: 18px;  top: -6px; }
+
+/* node type accent colors */
+.node-accent-blue   { background: rgba(91, 156, 246, 0.08); }
+.node-accent-purple { background: rgba(167, 139, 250, 0.08); }
+.node-accent-green  { background: rgba(52, 211, 153, 0.08); }
+.node-accent-orange { background: rgba(251, 146, 60, 0.08); }
+.node-accent-pink   { background: rgba(244, 114, 182, 0.08); }
+.node-accent-yellow { background: rgba(250, 204, 21, 0.08); }
+
+.draggable-node.merge       .node-dot { background: var(--accent-purple); }
+.draggable-node.conditional .node-dot { background: var(--accent-pink); }
+.draggable-node.apiCall     .node-dot { background: var(--accent-blue); }
+
+/* ── Modal ───────────────────────────────────── */
+.modal-overlay {
+  position:        fixed;
+  inset:           0;
+  background:      rgba(0, 0, 0, 0.6);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  z-index:         1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-card {
+  background:    #1a1a27;
+  border:        0.5px solid #3a3a55;
+  border-radius: var(--radius-xl);
+  padding:       24px;
+  width:         340px;
+  display:       flex;
+  flex-direction: column;
+  gap:           16px;
+}
+
+.modal-header {
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+}
+
+.modal-icon {
+  width:           32px;
+  height:          32px;
+  border-radius:   8px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       14px;
+  font-weight:     600;
+  flex-shrink:     0;
+}
+
+.modal-title {
+  font-size:   15px;
+  font-weight: 500;
+  color:       #e8e8f0;
+}
+
+.modal-stats {
+  display:               grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:                   12px;
+}
+
+.modal-stat {
+  background:    #13131a;
+  border:        0.5px solid #2a2a3d;
+  border-radius: var(--radius-md);
+  padding:       12px 8px;
+  display:       flex;
+  flex-direction: column;
+  align-items:   center;
+  gap:           4px;
+}
+
+.modal-stat-value {
+  font-size:   22px;
+  font-weight: 500;
+  color:       #e8e8f0;
+}
+
+.modal-stat-label {
+  font-size:  10px;
+  color:      #666680;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.modal-dag-info {
+  border:        0.5px solid;
+  border-radius: var(--radius-md);
+  padding:       10px 12px;
+}
+
+.modal-error-msg {
+  font-size: 12px;
+  color:     #f472b6;
+}
+
+.modal-close {
+  background:    transparent;
+  border:        0.5px solid #3a3a55;
+  border-radius: var(--radius-md);
+  color:         #888;
+  padding:       8px;
+  font-size:     12px;
+  cursor:        pointer;
+  transition:    border-color 0.15s, color 0.15s;
+  font-family:   var(--font);
+}
+
+.modal-close:hover {
+  border-color: #6c63ff;
+  color:        #e8e8f0;
+}
