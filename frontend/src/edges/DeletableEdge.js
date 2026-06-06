@@ -1,9 +1,7 @@
 import {
-  BaseEdge,
   EdgeLabelRenderer,
   getSmoothStepPath,
   useReactFlow,
-  MarkerType,
 } from 'reactflow';
 
 export const DeletableEdge = ({
