@@ -68,11 +68,10 @@ const selector = (state) => ({
   importPipeline:   state.importPipeline,
 });
 
-export const PipelineUI = () => {
-  const reactFlowWrapper  = useRef(null);
+export const PipelineUI = ({ fullscreen, setFullscreen }) => {
+    const reactFlowWrapper  = useRef(null);
   const fileInputRef      = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
-  const [fullscreen,        setFullscreen]        = useState(false);
   const [showClearModal,    setShowClearModal]    = useState(false);
   const [showDemoDrawer,    setShowDemoDrawer]    = useState(false);
 
@@ -137,13 +136,18 @@ export const PipelineUI = () => {
   };
 
   return (
-    <div
-      ref={reactFlowWrapper}
-      className={cn(
-        'flex-1 overflow-hidden',
-        fullscreen && 'fixed inset-0 z-40'
-      )}
-    >
+  <div
+  ref={reactFlowWrapper}
+  className={cn(
+    'flex-1 overflow-hidden relative',
+    fullscreen && 'fixed inset-0 z-40'
+  )}
+  style={
+    fullscreen
+      ? { width: '100vw', height: '100vh' }
+      : { height: '100%' }   // ADD — ensures height is defined normally too
+  }
+>
       {/* hidden file input for import */}
       <input
         type="file"
@@ -169,6 +173,7 @@ export const PipelineUI = () => {
         connectionLineType='smoothstep'
         deleteKeyCode='Delete'
         multiSelectionKeyCode='Shift'
+          style={{ width: '100%', height: '100%' }}
       >
         {isEmpty && <EmptyState />}
 

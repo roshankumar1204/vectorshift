@@ -14,6 +14,15 @@ export const StatusPanel = () => {
         <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
         Saved
       </div>
+
+        <div className="
+          px-3 py-1.5 rounded-full
+          bg-muted border border-border
+          text-[10px] text-muted-foreground
+          text-center ml-10
+        ">
+          ⚡ Backend on free tier — first response may take ~30s to wake up
+        </div>
     </Panel>
   );
 };
