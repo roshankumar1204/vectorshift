@@ -32,7 +32,7 @@ const setLoading = useStore(state => state.setLoading);
     setLoading(true);
     flashEdges(); // trigger onsubmit animation
     try {
-      const res = await fetch('http://localhost:8000/pipelines/parse', {
+     const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/pipelines/parse`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ nodes, edges }),
