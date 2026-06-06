@@ -13,13 +13,13 @@ export const InputNode = ({ id, data }) => {
     >
           <div className="node-field">
 
-      <label>Name:  </label>
+      <label>Name  </label>
         <input type="text" value={currName} onChange={e => setCurrName(e.target.value)} />
      
         </div>
             <div className="node-field">
 
-      <label>Type: </label>
+      <label>Type  </label>
         <select value={inputType} onChange={e => setInputType(e.target.value)}>
           <option value="Text">Text</option>
           <option value="File">File</option>
