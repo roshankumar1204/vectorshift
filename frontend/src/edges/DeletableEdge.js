@@ -9,7 +9,6 @@ export const DeletableEdge = ({
   sourceX, sourceY,
   targetX, targetY,
   sourcePosition, targetPosition,
-  style = {},
   selected,
 }) => {
   const { setEdges } = useReactFlow();

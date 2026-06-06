@@ -52,16 +52,6 @@ const setPipelineName = useStore(state => state.setPipelineName);
   />
 </div>
 
-<div className="flex items-center gap-2 mr-4">
-
-
-
-  <span className="text-xs text-muted-foreground">
-    AI Chat Flow
-  </span>
-
-</div>
-
 <div className="w-px h-5 bg-border mx-1" />
 
       {/* Toolbar Buttons */}

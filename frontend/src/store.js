@@ -51,13 +51,13 @@ export const useStore = create(
       },
 
       setEdgeAnimation: (mode) => {
-        set({ edgeAnimation: mode });
         set({
-          edges: get().edges.map(edge => ({
-            ...edge,
-            animated: mode === 'animated',
-          }))
-        });
+  edgeAnimation: mode,
+  edges: get().edges.map(edge => ({
+    ...edge,
+    animated: mode === 'animated',
+  }))
+});
       },
 
       getNodeID: (type) => {
@@ -100,7 +100,9 @@ export const useStore = create(
         set({
           nodes: get().nodes.map((node) => {
             if (node.id === nodeId) {
-              node.data = { ...node.data, [fieldName]: fieldValue };
+              return node.id === nodeId
+  ? { ...node, data: { ...node.data, [fieldName]: fieldValue } }
+  : node;
             }
             return node;
           }),
