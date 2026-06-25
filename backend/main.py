@@ -1,65 +1,30 @@
-from dotenv import load_dotenv
-load_dotenv()  # must be first
+# main.py — full updated file
 
-import os
-import google.generativeai as genai
-from fastapi import FastAPI
+from dotenv import load_dotenv
+load_dotenv()
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Dict, Any
+
+from utils.graph        import is_dag
+from models.requests    import Pipeline, PipelineRunRequest
+from executor.pipeline  import execute_pipeline
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://vectorshift-tau.vercel.app",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-flash-latest")
-
-class Pipeline(BaseModel):
-    nodes: List[Dict[str, Any]]
-    edges: List[Dict[str, Any]]
-
-class DemoRequest(BaseModel):
-    prompt: str
-
-def is_dag(nodes, edges):
-    graph = {node["id"]: [] for node in nodes}
-    for edge in edges:
-        src = edge["source"]
-        tgt = edge["target"]
-        if src in graph:
-            graph[src].append(tgt)
-
-    state = {node["id"]: 0 for node in nodes}
-
-    def dfs(node_id):
-        if state[node_id] == 1: return False
-        if state[node_id] == 2: return True
-        state[node_id] = 1
-        for neighbour in graph.get(node_id, []):
-            if not dfs(neighbour):
-                return False
-        state[node_id] = 2
-        return True
-
-    for node in nodes:
-        if state[node["id"]] == 0:
-            if not dfs(node["id"]):
-                return False
-    return True
 
 @app.get("/")
 def read_root():
-    return {"Ping": "Pong"}
+    return { "Ping": "Pong" }
+
 
 @app.post("/pipelines/parse")
 def parse_pipeline(pipeline: Pipeline):
@@ -69,10 +34,50 @@ def parse_pipeline(pipeline: Pipeline):
         "is_dag":    is_dag(pipeline.nodes, pipeline.edges),
     }
 
-@app.post("/demo/run")
-def run_demo(data: DemoRequest):
+
+@app.post("/pipelines/run")
+async def run_pipeline(request: PipelineRunRequest):
+    # validate DAG first
+    if not is_dag(request.nodes, request.edges):
+        raise HTTPException(
+            status_code=400,
+            detail="Pipeline contains a cycle — cannot execute."
+        )
+
+    # check all nodes are supported
+    supported = {"customInput", "customOutput", "text", "llm"}
+    for node in request.nodes:
+        if node["type"] not in supported:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported node type: {node['type']}"
+            )
+
     try:
-        response = model.generate_content(data.prompt)
-        return {"response": response.text}
+        outputs = execute_pipeline(
+            request.nodes,
+            request.edges,
+            request.input_values,
+        )
+        return {
+            "status":  "success",
+            "outputs": outputs,
+        }
+
     except Exception as e:
-        return {"response": f"Error: {str(e)}"}
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# keep existing demo endpoint
+@app.post("/demo/run")
+async def run_demo(data: dict):
+    prompt = data.get("prompt", "")
+    try:
+        import google.generativeai as genai
+        import os
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        model    = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        return { "response": response.text }
+    except Exception as e:
+        return { "response": f"Error: {str(e)}" }
