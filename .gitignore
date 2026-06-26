@@ -1,3 +1,6 @@
 # All environment files
 .env
 .env.*
+pycache__/*
+build/*
+node_modules/*

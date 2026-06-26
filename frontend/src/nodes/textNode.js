@@ -1,14 +1,17 @@
 import { useState, useRef, useLayoutEffect } from 'react';
 import { Handle, Position } from 'reactflow';
 import { BaseNode } from './BaseNode';
+import { useStore } from '../store';
 
 export const TextNode = ({ id, data, selected }) => {
-  const [currText, setCurrText] = useState(data?.text || '{{input}}');
+  const updateNodeField = useStore(state => state.updateNodeField);
+
+  const [currText, setCurrText] = useState(data?.text || '');
   const [variables, setVariables] = useState(() => {
     const regex = /\{\{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\}\}/g;
     const found = [];
     let match;
-    while ((match = regex.exec(data?.text || '{{input}}')) !== null) {
+    while ((match = regex.exec(data?.text || '')) !== null) {
       if (!found.includes(match[1])) found.push(match[1]);
     }
     return found;
@@ -29,52 +32,45 @@ export const TextNode = ({ id, data, selected }) => {
   };
 
   useLayoutEffect(() => {
-  const textarea = textareaRef.current;
-  const measure  = measureRef.current;
-  if (!textarea || !measure) return;
+    const textarea = textareaRef.current;
+    const measure  = measureRef.current;
+    if (!textarea || !measure) return;
 
-  const MIN_WIDTH = 320;
-  const MAX_WIDTH = 640; // 2-column limit — locks here
+    const MIN_WIDTH = 220;
+    const MAX_WIDTH = 640;
 
-  // ── reset height first so shrink works ──
-  textarea.style.height = 'auto';
+    textarea.style.height = 'auto';
 
-  // ── measure longest line for width ──
-  const longestLine = currText
-    .split('\n')
-    .reduce((a, b) => (b.length > a.length ? b : a), '');
-  measure.textContent = longestLine || 'x';
+    const longestLine = currText
+      .split('\n')
+      .reduce((a, b) => (b.length > a.length ? b : a), '');
+    measure.textContent = longestLine || 'x';
 
-  const newWidth = Math.max(
-    MIN_WIDTH,
-    Math.min(measure.offsetWidth + 80, MAX_WIDTH)
-  );
+    const newWidth = Math.max(MIN_WIDTH, Math.min(measure.offsetWidth + 80, MAX_WIDTH));
 
-  // ── once width is locked at MAX, wrap text so height grows ──
-  if (newWidth >= MAX_WIDTH) {
-    textarea.style.width  = '100%';
-    textarea.style.whiteSpace = 'pre-wrap';
-    textarea.style.wordBreak  = 'break-word';
-  }
+    if (newWidth >= MAX_WIDTH) {
+      textarea.style.whiteSpace = 'pre-wrap';
+      textarea.style.wordBreak  = 'break-word';
+    } else {
+      textarea.style.whiteSpace = 'pre';
+      textarea.style.wordBreak  = 'normal';
+    }
 
-  // ── measure true height after width is decided ──
-  const textHeight  = textarea.scrollHeight;
-  textarea.style.height = `${textHeight}px`;
+    const textHeight  = textarea.scrollHeight;
+    textarea.style.height = `${textHeight}px`;
 
-  const pillRows    = variables.length > 0 ? Math.ceil(variables.length / 4) : 0;
-  const pillsHeight = pillRows * 28;
+    const pillRows    = variables.length > 0 ? Math.ceil(variables.length / 4) : 0;
+    const pillsHeight = pillRows * 28;
 
-  setNodeSize({
-    width:  newWidth,
-    height: textHeight + pillsHeight + 90,
-  });
+    setNodeSize({ width: newWidth, height: textHeight + pillsHeight + 90 });
 
-}, [currText, variables]);
+  }, [currText, variables]);
 
   const handleTextChange = (e) => {
     const val = e.target.value;
     setCurrText(val);
     setVariables(extractVariables(val));
+    updateNodeField(id, 'text', val); // ← syncs to store
   };
 
   return (
@@ -82,18 +78,18 @@ export const TextNode = ({ id, data, selected }) => {
       id={id}
       label="Text"
       selected={selected}
+      minWidth={nodeSize.width}
       outputHandles={[{ id: `${id}-output` }]}
     >
-      {/* Hidden span to measure text width accurately */}
       <span
         ref={measureRef}
         style={{
-          position:   'absolute',
-          visibility: 'hidden',
-          whiteSpace: 'pre',
+          position:      'absolute',
+          visibility:    'hidden',
+          whiteSpace:    'pre',
           pointerEvents: 'none',
-          fontSize:   '12px',      // must match textarea font-size
-          fontFamily: 'inherit',
+          fontSize:      '12px',
+          fontFamily:    'inherit',
         }}
       />
 
@@ -101,25 +97,23 @@ export const TextNode = ({ id, data, selected }) => {
         <div className="node-field">
           <label>Text</label>
           <textarea
-  ref={textareaRef}
-  value={currText}
-  onChange={handleTextChange}
-  rows={1}
-  style={{
-    width:      '100%',
-    minHeight:  '40px',
-    resize:     'none',
-    overflow:   'hidden',
-    boxSizing:  'border-box',
-    fontSize:   '12px',
-    lineHeight: '1.5',
-    padding:    '6px 8px',
-    
-  }}
-/>
+            ref={textareaRef}
+            value={currText}
+            onChange={handleTextChange}
+            rows={1}
+            style={{
+              width:      '100%',
+              minHeight:  '40px',
+              resize:     'none',
+              overflow:   'hidden',
+              boxSizing:  'border-box',
+              fontSize:   '12px',
+              lineHeight: '1.5',
+              padding:    '6px 8px',
+            }}
+          />
         </div>
 
-        {/* Variable pills */}
         {variables.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
             {variables.map(v => (
@@ -140,7 +134,6 @@ export const TextNode = ({ id, data, selected }) => {
         )}
       </div>
 
-      {/* Dynamic variable handles — left side */}
       {variables.map((variable, index) => (
         <Handle
           key={variable}

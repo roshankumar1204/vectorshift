@@ -14,14 +14,19 @@ class TextExecutor(BaseExecutor):
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         text = self.get_data("text", "")
 
-        # inputs keys are the full handle IDs e.g. "textNode-1-varName"
-        # we need just the variable name part
+        print(f"Text inputs: {list(inputs.keys())}")
+        print(f"Text before: {text}")
+
         for handle_id, value in inputs.items():
-            # extract variable name from handle ID
-            # handle format: nodeId-variableName
-            var_name = self._extract_var_name(handle_id)
-            if var_name:
+            # handle format is "text-1-variableName"
+            # strip node id prefix to get variable name
+            prefix = f"{self.id}-"
+            if handle_id.startswith(prefix):
+                var_name = handle_id[len(prefix):]
                 text = text.replace(f"{{{{{var_name}}}}}", str(value))
+                print(f"Replaced {{{{ {var_name} }}}} with {value}")
+    
+        print(f"Text after: {text}")
 
         return {
             self.output_key("output"): text

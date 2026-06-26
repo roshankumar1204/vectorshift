@@ -19,6 +19,12 @@ export const useStore = create(
       loading: false,
       pipelineName: "Untitled Pipeline",
       selectedTemplate: null,
+      runModal:         null,
+      runLoading:       false,
+      showInputModal:   false,
+      setRunModal:       (modal)   => set({ runModal: modal }),
+setRunLoading:     (loading) => set({ runLoading: loading }),
+setShowInputModal: (show)    => set({ showInputModal: show }),
 
       setModal:        (modal)   => set({ modal }),
       setLoading:      (loading) => set({ loading }),

@@ -21,6 +21,8 @@ import { SubmitPanel }       from './components/panels/SubmitPanel';
 import { AnimationPanel }    from './components/panels/AnimationPanel';
 import { StatusPanel }       from './components/panels/StatusPanel';
 import { ClearModal }        from './components/modals/ClearModal';
+import { useRun } from './submit';
+
 
 import 'reactflow/dist/style.css';
 
@@ -85,6 +87,8 @@ export const PipelineUI = ({ fullscreen, setFullscreen }) => {
 
   const isEmpty = nodes.length === 0;
   const { loading, handleSubmit } = useSubmit();
+  const { handleRun, runLoading } = useRun();
+
 
   const getInitNodeData = (nodeID, type) => ({ id: nodeID, nodeType: type });
 
@@ -196,10 +200,12 @@ export const PipelineUI = ({ fullscreen, setFullscreen }) => {
         />
 
         <SubmitPanel
-          loading={loading}
-          handleSubmit={handleSubmit}
-          onClearClick={() => setShowClearModal(true)}
-        />
+  loading={loading}
+  handleSubmit={handleSubmit}
+  onClearClick={() => setShowClearModal(true)}
+  onRunClick={handleRun}
+  runLoading={runLoading}
+/>
 
         <AnimationPanel
           edgeAnimation={edgeAnimation}

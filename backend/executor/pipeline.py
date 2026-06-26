@@ -1,6 +1,8 @@
 # executor/pipeline.py
 
 from typing import List, Dict, Any
+
+from networkx import edges
 from utils.graph import topological_sort, find_node, build_handle_map
 from executor.nodes import get_executor
 
@@ -31,6 +33,11 @@ def execute_pipeline(
     # node_outputs stores every value produced by every node
     # key format: "nodeId:handleId"
     node_outputs: Dict[str, Any] = {}
+    
+    # before execute loop
+    print("=== edges ===")
+    for e in edges:
+        print(f"  {e['source']}:{e['sourceHandle']} → {e['target']}:{e['targetHandle']}")
 
     # inject user-provided input values
     for node_id, value in input_values.items():

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PipelineToolbar } from './toolbar';
 import { PipelineUI }      from './ui';
-import { PipelineModal }   from './submit';
+import { PipelineModal, RunInputModal, RunResultModal } from './submit';
 
 function App() {
   const [fullscreen, setFullscreen] = useState(false);
@@ -11,6 +11,8 @@ function App() {
       {!fullscreen && <PipelineToolbar />}
       <PipelineUI fullscreen={fullscreen} setFullscreen={setFullscreen} />
       <PipelineModal />
+      <RunInputModal />
+      <RunResultModal />
     </div>
   );
 }
